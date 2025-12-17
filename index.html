@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Finder UI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cutive+Mono&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+    <div class="scene">
+        <div class="pokeball"></div>
+
+        <div class="ui-layer">
+            
+            <div class="title-box">
+                <h1>Pokémon Finder</h1>
+            </div>
+
+            <div class="nav-tabs">
+                <button class="btn-tab active">
+                    <i class="ri-search-line"></i> BUSCAR
+                </button>
+                <button class="btn-tab">
+                    <i class="ri-file-list-line"></i> HISTÓRICO
+                </button>
+                <button class="btn-tab">
+                    <i class="ri-sword-line"></i> VS
+                </button>
+                <button class="btn-tab">
+                    <i class="ri-heart-3-fill" style="color: red;"></i> FAVORITOS
+                </button>
+            </div>
+
+            <div class="search-row">
+                <div class="dropdown">
+                    <span><i class="ri-bug-line"></i> POKÉMON</span>
+                    <i class="ri-expand-up-down-line"></i>
+                </div>
+
+                <input type="text" class="search-input" placeholder="NOMBRE O ID...">
+
+                <button class="btn-search" onclick="buscarPokemon()">
+                    BUSCAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
