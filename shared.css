@@ -1,104 +1,147 @@
 :root {
-    --bg-dots: #e5e5e5;
-    --dot-color: #b0b0b0;
+    --color-bg: #f5e6d3;
+    --color-primary: #2d2d2d;
     --stroke: #1a1a1a;
     --red-poke: #ff5252;
     --cyan-accent: #4dd0e1;
     --yellow-accent: #fff176;
-    --green-accent: #a5d6a7;
     --white: #ffffff;
     --shadow: 6px 6px 0px var(--stroke);
-    --border: 3px solid var(--stroke);
+    --border: 4px solid var(--stroke); /* Tu borde de 4px */
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    font-family: 'Cutive Mono', monospace;
-    background-color: var(--bg-dots);
-    background-image: radial-gradient(var(--dot-color) 1.5px, transparent 1.5px);
+    font-family: 'Courier New', monospace;
+    background-color: var(--color-bg);
+    background-image: radial-gradient(var(--color-primary) 1.5px, transparent 1.5px);
     background-size: 20px 20px;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
-.scene { position: relative; width: 600px; display: flex; justify-content: center; align-items: center; }
+/* Contenedor Principal */
+.scene {
+    position: relative;
+    width: 650px;
+    height: 650px;
+    display: flex;
+    justify-content: center;
+}
 
+/* --- La Pokébola de Fondo --- */
 .pokeball {
     position: absolute;
-    width: 500px; height: 500px;
+    width: 650px; height: 650px;
     border-radius: 50%;
     border: var(--border);
-    background: linear-gradient(155deg, var(--red-poke) 46%, var(--stroke) 46%, var(--stroke) 54%, var(--white) 54%);
+    border-width: 15px;
+    background: linear-gradient(
+        155deg, 
+        var(--red-poke) 0%, var(--red-poke) 47%, 
+        var(--stroke) 47%, var(--stroke) 53%, 
+        var(--white) 53%, var(--white) 100%
+    );
+    box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
     z-index: 1;
-    transform: rotate(-10deg);
+    transform: rotate(4deg);
 }
 
 .pokeball::after {
-    content: ''; position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
+    content: ''; position: absolute;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: 120px; height: 120px;
-    background: var(--white); border: var(--border); border-width: 6px; border-radius: 50%;
+    background-color: var(--white);
+    border: var(--border); border-width: 20px; border-radius: 50%;
+    z-index: 2;
 }
 
 /* --- Interfaz de Usuario (UI) --- */
 .ui-layer {
-    position: relative; 
-    z-index: 10;
-    display: flex; 
-    flex-direction: column; 
-    align-items: center;
-    gap: 20px; 
-    /* ELIMINA o COMENTA la línea de abajo para que la capa base esté recta */
-    /* transform: rotate(-2deg); */ 
+    position: relative; top: 15px; z-index: 3;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 10px;
 }
 
-.title-box { 
-    background: var(--cyan-accent); 
-    border: var(--border); 
-    padding: 10px 40px; 
-    box-shadow: var(--shadow); 
-    /* Mantenemos o aumentamos la inclinación solo aquí */
-    transform: rotate(-3deg) translateY(-10px); 
+/* Título Principal */
+.title-box {
+    background-color: var(--cyan-accent);
+    border: var(--border); padding: 10px 40px;
+    box-shadow: var(--shadow);
+    transform: rotate(-2deg) translateY(-10px);
     margin-bottom: 10px;
 }
 
-.nav-tabs { display: flex; gap: 15px; }
-.btn-tab { background: var(--white); border: var(--border); padding: 10px 15px; font-family: inherit; font-weight: bold; cursor: pointer; box-shadow: 4px 4px 0px var(--stroke); }
-.btn-tab.active { background: var(--cyan-accent); }
-.search-row { display: flex; gap: 10px; align-items: center; }
-.dropdown { background: var(--yellow-accent); border: var(--border); padding: 12px; box-shadow: 4px 4px 0px var(--stroke); font-weight: bold; }
-.search-input { border: var(--border); padding: 12px; width: 250px; box-shadow: 4px 4px 0px var(--stroke); font-family: inherit; }
-.btn-search { background: var(--red-poke); color: var(--white); border: var(--border); padding: 12px 25px; font-family: inherit; font-weight: bold; cursor: pointer; box-shadow: 4px 4px 0px var(--stroke); }
+.title-box h1 {
+    font-size: 2.5rem; font-weight: bolder;
+    letter-spacing: 2px; text-transform: uppercase;
+}
 
-/* --- TARJETA DE DATOS --- */
+/* Botones de Navegación */
+.nav-tabs { display: flex; gap: 15px; width: 100%; justify-content: center; }
+.btn-tab {
+    background-color: var(--white); border: var(--border);
+    padding: 15px 15px; font-family: inherit; font-weight: bold; font-size: 1rem;
+    cursor: pointer; box-shadow: 6px 6px 0px var(--stroke);
+    display: flex; align-items: center; gap: 8px; transition: transform 0.1s, box-shadow 0.1s;
+}
+.btn-tab.active { background-color: var(--cyan-accent); }
+.btn-tab:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0px var(--stroke); }
+.btn-tab:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--stroke); }
+
+/* Fila del Buscador */
+.search-row { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+
+.dropdown {
+    background-color: var(--yellow-accent); border: var(--border);
+    border-radius: 4px; padding: 15px 5px; font-weight: bold;
+    display: flex; align-items: center; gap: 5px; cursor: pointer;
+    min-width: 120px; justify-content: space-between;
+}
+
+.search-input {
+    border: var(--border); padding: 15px 15px; font-family: inherit; font-size: 1rem;
+    box-shadow: 6px 6px 0px var(--stroke); width: 250px; outline: none; text-transform: uppercase;
+}
+.search-input::placeholder { color: #888; }
+
+.btn-search {
+    background-color: var(--red-poke); color: var(--white); border: var(--border);
+    padding: 15px 25px; font-family: inherit; font-weight: bold; font-size: 1rem;
+    box-shadow: 4px 4px 0px var(--stroke); cursor: pointer; text-transform: uppercase; transition: all 0.1s;
+}
+.btn-search:hover { background-color: #ff3333; transform: translate(-1px, -1px); box-shadow: 5px 5px 0px var(--stroke); }
+.btn-search:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px var(--stroke); }
+
+/* --- NUEVOS ESTILOS PARA LA TARJETA DE RESULTADOS (API) --- */
 .pokemon-card {
-    background: white; 
+    background: var(--white);
     border: var(--border);
-    width: 450px; 
-    padding: 20px; 
+    width: 450px;
+    padding: 20px;
     margin-top: 20px;
     box-shadow: 10px 10px 0px var(--stroke);
-    position: relative; 
     animation: fadeIn 0.3s ease-out;
-    /* Asegúrate de que NO tenga transform: rotate aquí */
-    transform: rotate(0deg); 
 }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 .image-bg {
-    border: var(--border); background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #ffffff 10px, #ffffff 20px);
-    width: 100%; height: 200px; display: flex; justify-content: center; align-items: center;
+    border: var(--border);
+    background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #ffffff 10px, #ffffff 20px);
+    width: 100%; height: 200px;
+    display: flex; justify-content: center; align-items: center;
+    margin-bottom: 15px;
 }
 
-.image-bg img { width: 140px; image-rendering: pixelated; }
+.image-bg img { width: 160px; image-rendering: pixelated; }
 
-.stats-grid { margin-top: 15px; }
-.stat-row { display: flex; align-items: center; margin-bottom: 8px; font-size: 0.8rem; }
-.stat-name { width: 130px; font-weight: bold; }
-.stat-bar-outer { flex-grow: 1; height: 15px; border: var(--border); background: white; }
-.stat-bar-inner { height: 100%; background: var(--cyan-accent); transition: width 0.5s ease-in-out; }
+.stats-grid { margin-top: 15px; width: 100%; }
+.stat-row { display: flex; align-items: center; margin-bottom: 8px; font-size: 0.9rem; }
+.stat-name { width: 140px; font-weight: bold; }
+.stat-bar-outer { flex-grow: 1; height: 18px; border: var(--border); background: var(--white); }
+.stat-bar-inner { height: 100%; background: var(--cyan-accent); }
