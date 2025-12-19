@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokémon Finder UI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cutive+Mono&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="shared.css">
 </head>
@@ -16,7 +15,7 @@
         <div class="ui-layer">
             
             <div class="title-box">
-                <h1>Pokémon Finderr</h1>
+                <h1>Pokémon Finder</h1>
             </div>
 
             <div class="nav-tabs">
@@ -35,11 +34,14 @@
             </div>
 
             <div class="search-row">
-                <div class="dropdown">
-                    <span><i class="ri-bug-line"></i> POKÉMON</span>
+                <div class="select-wrapper">
+                    <select>
+                        <option value="Pokémon">👾 POKÉMON</option>
+                        <option value="Habilidad">⚡ HABILIDAD</option>
+                    </select>
                     <i class="ri-expand-up-down-line"></i>
                 </div>
-
+        
                 <input type="text" id="pokemon-input" class="search-input" placeholder="NOMBRE O ID...">
 
                 <button class="btn-search">
