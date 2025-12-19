@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Finder UI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cutive+Mono&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<div class="scene">
+    <div class="pokeball"></div>
+
+    <div class="ui-layer">
+        <div class="title-box">
+            <h1>Histórico</h1>
+        </div>
+        
+        <div class="nav-tabs">
+            <button class="btn-tab" data-page="index.html">
+                <i class="ri-search-line"></i> BUSCAR
+            </button>
+            <button class="btn-tab active" data-page="historico.html">
+                <i class="ri-file-list-line"></i> HISTÓRICO
+            </button>
+            <button class="btn-tab" data-page="vs.html">
+                <i class="ri-sword-line"></i> VS
+            </button>
+            <button class="btn-tab" data-page="favoritos.html">
+                <i class="ri-heart-3-fill" style="color: red;"></i> FAVORITOS
+            </button>
+        </div>
+        <div id="history-list"></div>
+
+        <button class="btn-search" id="clear-history">
+            LIMPIAR TODO
+        </button>
+    </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        PokeFinderApp.renderHistory();
+    });
+</script>
+</body>
+</html>

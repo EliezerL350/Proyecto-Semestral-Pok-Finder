@@ -1,99 +1,26 @@
 // shared.js
 const PokeFinderApp = (() => {
 
-    const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 horas
+    // Tiempo de vida del caché (24 horas)
+    const CACHE_TTL = 1000 * 60 * 60 * 24;
+    const HISTORY_KEY = "poke-history";
     let activeEvolution = null;
 
-    /* =====================
-       DATA STRUCTURE
-    ===================== */
-    class EvolutionNode {
-        constructor(name, sprite) {
-            this.name = name;
-            this.sprite = sprite;
-            this.next = null;
-            this.branches = [];
-        }
-    }
-
-    /* =====================
-       DOM CACHE
-    ===================== */
+    // Elementos del HTML
     const htmlElements = {
         input: document.getElementById('pokemon-input'),
         container: document.getElementById('result-container'),
-        searchBtn: document.querySelector('.btn-search')
+        searchType: document.getElementById("search-type"),
+        historyList: document.getElementById("history-list"),
+        clearHistoryBtn: document.getElementById("clear-history"),
+        searchBtn: document.querySelector(".btn-search"),
+        tabs: document.querySelectorAll(".btn-tab")
     };
 
-    /* =====================
-       TEMPLATES
-    ===================== */
-    const templates = {};
-
-    templates.evolutionChain = (root) => {
-
-        const renderNode = (node) => `
-            <div class="evo-card ${node.name === activeEvolution ? 'active' : ''}"
-                data-name="${node.name}"
-                style="
-                    border:4px solid black;
-                    padding:10px;
-                    cursor:pointer;
-                    text-align:center;
-                    width:120px;
-                    box-shadow:6px 6px 0 black;">
-                <img src="${node.sprite}" style="width:80px">
-                <div style="font-weight:bold;margin-top:5px">
-                    ${node.name.toUpperCase()}
-                </div>
-            </div>
-        `;
-
-
-        let html = `
-            <div style="margin-top:30px">
-                <hr style="border:2px dashed black;margin:20px 0;">
-                <h3 style="text-align:center;margin-bottom:20px">
-                    CADENA DE EVOLUCIÓN
-                </h3>
-                <div style="
-                    display:flex;
-                    justify-content:center;
-                    flex-wrap:wrap;
-                    gap:20px;
-                    max-width:600px;
-                    margin:0 auto;
-                ">
-
-        `;
-
-        let current = root;
-        html += renderNode(current);
-
-        while (current.next) {
-            html += `<div style="font-size:2rem;align-self:center">→</div>`;
-            html += renderNode(current.next);
-            current = current.next;
-        }
-
-        if (current.branches.length > 0) {
-            html += `
-                </div>
-                <div style="display:flex;justify-content:center;gap:20px;margin-top:20px">
-            `;
-            current.branches.forEach(b => {
-                html += renderNode(b);
-            });
-        }
-
-        html += `</div></div>`;
-        return html;
-    };
-
-    // UTILS
-    
+    // Funciones de apoyo
     const utils = {
 
+        // Obtener datos del caché
         getFromCache(key) {
             const item = JSON.parse(localStorage.getItem(key));
             if (!item) return null;
@@ -105,6 +32,7 @@ const PokeFinderApp = (() => {
             return item.data;
         },
 
+        // Guardar datos en caché
         saveToCache(key, data) {
             localStorage.setItem(key, JSON.stringify({
                 data,
@@ -112,114 +40,90 @@ const PokeFinderApp = (() => {
             }));
         },
 
-        async fetchEvolutionChain(pokemonId) {
-            const speciesRes = await fetch(
-                `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`
+        // Obtener histórico
+        getHistory() {
+            return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+        },
+
+        // Guardar búsqueda en histórico
+        saveHistory(pokemon) {
+            let history = utils.getHistory()
+                .filter(p => p.id !== pokemon.id);
+
+            history.unshift({ id: pokemon.id, name: pokemon.name });
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        },
+
+        // Eliminar del histórico
+        removeFromHistory(id) {
+            const history = utils.getHistory()
+                .filter(p => p.id !== id);
+
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        },
+
+        // Limpiar histórico y caché
+        clearHistoryAndCache() {
+            localStorage.removeItem(HISTORY_KEY);
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith("pokemon-")) {
+                    localStorage.removeItem(key);
+                }
+            });
+        }
+    };
+
+    // Función principal de búsqueda
+    const buscar = async () => {
+        const valor = htmlElements.input.value.toLowerCase().trim();
+        const tipo = htmlElements.searchType?.value || "pokemon";
+
+        if (!valor) {
+            alert("Por favor escribe un nombre o ID.");
+            return;
+        }
+
+        htmlElements.container.innerHTML = "⏳ Buscando...";
+
+        try {
+            if (tipo === "pokemon") {
+                await buscarPokemon(valor);
+            } else {
+                await buscarHabilidad(valor);
+            }
+        } catch {
+            htmlElements.container.innerHTML =
+                `<div class="pokemon-card">❌ No encontrado</div>`;
+        }
+    };
+
+    // Buscar Pokémon
+    const buscarPokemon = async (valor) => {
+        const cacheKey = `pokemon-${valor}`;
+        let data = utils.getFromCache(cacheKey);
+        let source = "CACHÉ";
+
+        if (!data) {
+            const response = await fetch(
+                `https://pokeapi.co/api/v2/pokemon/${valor}`
             );
-            const speciesData = await speciesRes.json();
+            if (!response.ok) throw new Error();
 
-            const evoRes = await fetch(speciesData.evolution_chain.url);
-            const evoData = await evoRes.json();
-
-            return evoData.chain;
-        },
-
-        async buildEvolutionTree(chain) {
-
-            const createNode = async (species) => {
-                const res = await fetch(
-                    `https://pokeapi.co/api/v2/pokemon/${species.name}`
-                );
-                const data = await res.json();
-                return new EvolutionNode(
-                    species.name,
-                    data.sprites.front_default
-                );
-            };
-
-            const root = await createNode(chain.species);
-            let current = root;
-            let evolves = chain.evolves_to;
-
-            while (evolves.length > 0) {
-                if (evolves.length === 1) {
-                    const nextNode = await createNode(evolves[0].species);
-                    current.next = nextNode;
-                    current = nextNode;
-                    evolves = evolves[0].evolves_to;
-                } else {
-                    for (let evo of evolves) {
-                        current.branches.push(
-                            await createNode(evo.species)
-                        );
-                    }
-                    break;
-                }
-            }
-            return root;
-        }
-    };
-
-    //handlers
-    const handlers = {
-
-        async onSearch() {
-            const valor = htmlElements.input.value.toLowerCase().trim();
-            if (!valor) return alert("Escribe un nombre o ID");
-
-            // ✅ MARCAR ACTIVO AL BUSCAR ESCRIBIENDO
- 
-            htmlElements.container.innerHTML = "⏳ Buscando...";
-
-            const cacheKey = `pokemon-${valor}`;
-
-            try {
-                let data = utils.getFromCache(cacheKey);
-                let source = "CACHÉ";
-
-                if (!data) {
-                    const res = await fetch(
-                        `https://pokeapi.co/api/v2/pokemon/${valor}`
-                    );
-                    if (!res.ok) throw new Error();
-                    data = await res.json();
-                    utils.saveToCache(cacheKey, data);
-                    source = "API";
-                }
-                activeEvolution = data.name;
-
-                renderPokemon(data, source);
-
-                const chain = await utils.fetchEvolutionChain(data.id);
-                const tree = await utils.buildEvolutionTree(chain);
-                htmlElements.container.innerHTML +=
-                    templates.evolutionChain(tree);
-
-            } catch {
-                htmlElements.container.innerHTML =
-                    `<div class="pokemon-card">❌ Pokémon no encontrado</div>`;
-            }
-        },
-
-        
-        onEvolutionClick(e) {
-            const card = e.target.closest('.evo-card');
-            if (!card) return;
-
-            activeEvolution = card.dataset.name;
-
-            htmlElements.input.value = activeEvolution;
-            handlers.onSearch();
+            data = await response.json();
+            utils.saveToCache(cacheKey, data);
+            source = "API";
         }
 
-
+        activeEvolution = data.name;
+        renderPokemon(data, source);
+        utils.saveHistory(data);
+        await renderEvolution(data.id);
     };
 
-    //RENDER
+    // Mostrar Pokémon
     const renderPokemon = (data, source) => {
         htmlElements.container.innerHTML = `
             <div class="pokemon-card">
-
                 <div style="font-weight:bold;font-size:1.2rem;margin-bottom:10px;">
                     <span style="color:var(--red-poke)">#${data.id}</span>
                     ${data.name.toUpperCase()}
@@ -231,74 +135,182 @@ const PokeFinderApp = (() => {
                         border:var(--border);
                         font-size:0.7rem;
                         font-weight:bold;
-                        background:${source === 'API'
-                            ? 'var(--color-success)'
-                            : 'var(--color-cache)'};
+                        background:${source === "API"
+                            ? "var(--cyan-accent)"
+                            : "var(--yellow-accent)"};
                     ">
                         ${source}
                     </span>
                 </div>
 
                 <div class="image-bg">
-                    <img src="${data.sprites.front_default}" alt="${data.name}">
+                    <img src="${data.sprites.front_default}">
                 </div>
 
-                <!-- TIPOS -->
                 <div style="display:flex;gap:10px;margin:15px 0;">
                     ${data.types.map(t => `
-                        <span style="
-                            background:var(--stroke);
-                            color:white;
-                            padding:8px 12px;
-                            font-weight:bold;
-                            font-size:0.8rem;">
+                        <span style="background:var(--stroke);color:white;padding:8px 12px;font-weight:bold;">
                             ${t.type.name.toUpperCase()}
                         </span>
-                    `).join('')}
+                    `).join("")}
                 </div>
 
-                <!-- STATS -->
                 <div class="stats-grid">
                     ${data.stats.map(s => `
                         <div class="stat-row">
-                            <span class="stat-name">
-                                ${s.stat.name.toUpperCase()}
-                            </span>
+                            <span class="stat-name">${s.stat.name.toUpperCase()}</span>
                             <div class="stat-bar-outer">
                                 <div class="stat-bar-inner"
                                     style="width:${(s.base_stat / 150) * 100}%">
                                 </div>
                             </div>
                         </div>
-                    `).join('')}
+                    `).join("")}
                 </div>
-
             </div>
         `;
     };
 
-
-    /* =====================
-       INIT
-    ===================== */
-    const init = () => {
-        htmlElements.searchBtn.addEventListener(
-            'click', handlers.onSearch
+    // Mostrar evolución
+    const renderEvolution = async (pokemonId) => {
+        const speciesRes = await fetch(
+            `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`
         );
+        const speciesData = await speciesRes.json();
 
-        htmlElements.input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handlers.onSearch();
+        const evoRes = await fetch(speciesData.evolution_chain.url);
+        const evoData = await evoRes.json();
+
+        const buildChain = async (node) => {
+            const res = await fetch(
+                `https://pokeapi.co/api/v2/pokemon/${node.species.name}`
+            );
+            const data = await res.json();
+
+            let html = `
+                <div class="evo-card ${node.species.name === activeEvolution ? "active" : ""}"
+                     data-name="${node.species.name}">
+                    <img src="${data.sprites.front_default}">
+                    <div>${node.species.name.toUpperCase()}</div>
+                </div>
+            `;
+
+            if (node.evolves_to.length) {
+                html += `<div style="font-size:2rem;">→</div>`;
+                html += await buildChain(node.evolves_to[0]);
+            }
+            return html;
+        };
+
+        const chainHTML = await buildChain(evoData.chain);
+
+        htmlElements.container.innerHTML += `
+            <div class="pokemon-card" style="margin-top:30px;">
+                <h3 style="text-align:center;margin-bottom:20px;">
+                    CADENA DE EVOLUCIÓN
+                </h3>
+                <div style="display:flex;justify-content:center;gap:20px;">
+                    ${chainHTML}
+                </div>
+            </div>
+        `;
+    };
+
+    // Buscar habilidad
+    const buscarHabilidad = async (valor) => {
+        const res = await fetch(
+            `https://pokeapi.co/api/v2/ability/${valor}`
+        );
+        if (!res.ok) throw new Error();
+
+        const data = await res.json();
+        const desc =
+            data.effect_entries.find(e => e.language.name === "es")
+                ?.short_effect || "Descripción no disponible";
+
+        htmlElements.container.innerHTML = `
+            <div class="pokemon-card">
+                <div style="font-weight:bold;font-size:1.2rem;">
+                    ⚡ ${data.name.toUpperCase()}
+                </div>
+                <p style="margin:15px 0;">${desc}</p>
+            </div>
+        `;
+    };
+
+    // Mostrar histórico
+    const renderHistory = () => {
+        if (!htmlElements.historyList) return;
+
+        const history = utils.getHistory();
+        if (!history.length) {
+            htmlElements.historyList.innerHTML =
+                `<div class="pokemon-card">📭 No hay búsquedas todavía</div>`;
+            return;
+        }
+
+        htmlElements.historyList.innerHTML = history.map(p => `
+            <div class="pokemon-card" style="display:flex;align-items:center;gap:15px;">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id}.png" width="60">
+                <div data-id="${p.id}" style="flex-grow:1;cursor:pointer;">
+                    <strong>#${p.id} ${p.name.toUpperCase()}</strong>
+                </div>
+                <button data-remove="${p.id}">🗑</button>
+            </div>
+        `).join("");
+
+        htmlElements.historyList.onclick = (e) => {
+            if (e.target.dataset.id) {
+                window.location.href =
+                    `index.html?pokemon=${e.target.dataset.id}`;
+            }
+            if (e.target.dataset.remove) {
+                utils.removeFromHistory(Number(e.target.dataset.remove));
+                renderHistory();
+            }
+        };
+
+        htmlElements.clearHistoryBtn?.addEventListener("click", () => {
+            utils.clearHistoryAndCache();
+            renderHistory();
+        });
+    };
+
+    // Inicializar aplicación
+    const init = () => {
+
+        htmlElements.searchBtn?.addEventListener("click", buscar);
+
+        htmlElements.input?.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") buscar();
         });
 
-        htmlElements.container.addEventListener(
-            'click', handlers.onEvolutionClick
-        );
+        htmlElements.container?.addEventListener("click", (e) => {
+            const card = e.target.closest(".evo-card");
+            if (!card) return;
+            htmlElements.input.value = card.dataset.name;
+            buscar();
+        });
+
+        htmlElements.tabs.forEach(tab => {
+            tab.addEventListener("click", () => {
+                if (tab.textContent.includes("HISTÓRICO"))
+                    window.location.href = "historico.html";
+                if (tab.textContent.includes("BUSCAR"))
+                    window.location.href = "index.html";
+            });
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("pokemon") && htmlElements.input) {
+            htmlElements.input.value = params.get("pokemon");
+            buscar();
+        }
+
+        renderHistory();
     };
 
     return { init };
 })();
 
-document.addEventListener(
-    "DOMContentLoaded",
-    PokeFinderApp.init
-);
+document.addEventListener("DOMContentLoaded", PokeFinderApp.init);
