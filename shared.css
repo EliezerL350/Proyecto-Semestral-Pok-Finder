@@ -157,6 +157,80 @@ select{
 .btn-search:hover { background-color: #ff3333; transform: translate(-1px, -1px); box-shadow: 5px 5px 0px var(--stroke); }
 .btn-search:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px var(--stroke); }
 
+/* ================= RESULTADOS ================= */
+#result-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pokemon-card {
+    background: var(--white);
+    border: var(--border);
+    width: 450px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 10px 10px 0 var(--stroke);
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.image-bg {
+    border: var(--border);
+    background: repeating-linear-gradient(
+        45deg,
+        #f0f0f0,
+        #f0f0f0 10px,
+        #ffffff 10px,
+        #ffffff 20px
+    );
+    width: 100%;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.image-bg img {
+    width: 160px;
+    image-rendering: pixelated;
+}
+
+.stats-grid {
+    margin-top: 15px;
+    width: 100%;
+}
+
+.stat-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.stat-name {
+    width: 140px;
+    font-weight: bold;
+}
+
+.stat-bar-outer {
+    flex-grow: 1;
+    height: 18px;
+    border: var(--border);
+    background: var(--white);
+}
+
+.stat-bar-inner {
+    height: 100%;
+    background: var(--cyan-accent);
+}
+
 /* --- NUEVOS ESTILOS PARA LA TARJETA DE RESULTADOS (API) --- */
 .pokemon-card {
     background: var(--white);
