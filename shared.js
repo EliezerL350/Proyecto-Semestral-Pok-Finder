@@ -1,69 +1,73 @@
 // shared.js
 const PokeFinderApp = (() => {
 
-    const input = () => document.getElementById('pokemon-input');
-    const container = () => document.getElementById('result-container');
-    const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 horas
+     const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 horas
 
-    const getFromCache = (key) => {
-        const item = JSON.parse(localStorage.getItem(key));
-        if (!item) return null;
-
-        const isExpired = Date.now() - item.timestamp > CACHE_TTL;
-        if (isExpired) {
-            localStorage.removeItem(key);
-            return null;
-        }
-
-        return item.data;
+    const htmlElements = {
+            input: document.getElementById('pokemon-input'),
+            container: document.getElementById('result-container'),
     };
 
-    const saveToCache = (key, data) => {
-        localStorage.setItem(key, JSON.stringify({
-            data,
-            timestamp: Date.now()
-        }));
-    };
+    const utils = {
+        getFromCache(key)
+        {
+            const item = JSON.parse(localStorage.getItem(key));
+            if (!item) return null;
+
+            const isExpired = Date.now() - item.timestamp > CACHE_TTL;
+            if (isExpired) {
+                localStorage.removeItem(key);
+                return null;
+            }
+
+            return item.data;
+        },
 
 
-    const buscarPokemon = async () => {
-        const valor = input().value.toLowerCase().trim();
+        saveToCache(key,data)
+        {
+            localStorage.setItem(key, JSON.stringify({
+                data,
+                timestamp: Date.now()
+            }));
+        },
 
-        if (valor === "") {
-            alert("Por favor escribe un nombre o ID.");
-            return;
+
+        async buscarPokemon()
+        {
+            const valor = htmlElements.input.value.toLowerCase().trim();
+
+            if (valor === "") {
+                alert("Por favor escribe un nombre o ID.");
+                return;
+            }
+
+            htmlElements.container.innerHTML = "⏳ Buscando...";
+            const cacheKey = `pokemon-${valor}`;
+
+            try 
+            {
+                let data = utils.getFromCache(cacheKey);
+                let source = "CACHÉ";
+
+                if (!data) {
+                    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${valor}`);
+                    if (!response.ok) throw new Error("No encontrado");
+
+                    data = await response.json();
+                    utils.saveToCache(cacheKey, data);
+                    source = "API";
+                }
+                renderPokemon(data, source);
+
+            } catch (error) {
+                htmlElements.container.innerHTML = `<div class="pokemon-card">❌ Pokémon no encontrado</div>`;
+            }
         }
-
-        container().innerHTML = "⏳ Buscando...";
-
-    const cacheKey = `pokemon-${valor}`;
-
-    try {
-        let data = getFromCache(cacheKey);
-        let source = "CACHÉ";
-
-        if (!data) {
-            const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${valor}`);
-            if (!response.ok) throw new Error("No encontrado");
-
-            data = await response.json();
-            saveToCache(cacheKey, data);
-            source = "API";
-        }
-
-        renderPokemon(data, source);
-
-    } catch (error) {
-        container().innerHTML = `
-            <div class="pokemon-card">
-                ❌ Pokémon no encontrado
-            </div>
-        `;
     }
-    };
 
     const renderPokemon = (data, source) => {
-        container().innerHTML = `
+        htmlElements.container.innerHTML = `
             <div class="pokemon-card">
                 <div style="font-weight: bold; margin-bottom: 10px; font-size: 1.2rem;">
                     <span style="color: var(--red-poke)">#${data.id}</span>
@@ -113,10 +117,10 @@ const PokeFinderApp = (() => {
 
     const init = () => {
         document.querySelector('.btn-search')
-            .addEventListener('click', buscarPokemon);
+            .addEventListener('click', utils.buscarPokemon);
 
-        input().addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') buscarPokemon();
+        htmlElements.input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') utils.buscarPokemon();
         });
 
         // pestañas

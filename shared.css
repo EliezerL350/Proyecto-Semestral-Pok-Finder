@@ -4,16 +4,20 @@
     --stroke: #1a1a1a;
     --red-poke: #ff5252;
     --cyan-accent: #4dd0e1;
-    --yellow-accent: #fff176;
+    --yellow-accent: #ffcc00;
     --white: #ffffff;
     --shadow: 6px 6px 0px var(--stroke);
     --border: 4px solid var(--stroke); /* Tu borde de 4px */
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+    font-family: 'Courier New', monospace;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0; 
+}
 
 body {
-    font-family: 'Courier New', monospace;
     background-color: var(--color-bg);
     background-image: radial-gradient(var(--color-primary) 1.5px, transparent 1.5px);
     background-size: 20px 20px;
@@ -52,33 +56,47 @@ body {
 }
 
 .pokeball::after {
-    content: ''; position: absolute;
-    top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 120px; height: 120px;
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
     background-color: var(--white);
-    border: var(--border); border-width: 20px; border-radius: 50%;
+    border: var(--border);
+    border-width: 20px;
+    border-radius: 50%;
     z-index: 2;
 }
 
 /* --- Interfaz de Usuario (UI) --- */
 .ui-layer {
-    position: relative; top: 15px; z-index: 3;
-    display: flex; flex-direction: column; align-items: center;
+    position: relative;
+    top: 15px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 10px;
 }
 
 /* Título Principal */
 .title-box {
-    background-color: var(--cyan-accent);
-    border: var(--border); padding: 10px 40px;
+    background-color: 
+    var(--cyan-accent);
+    border: var(--border); 
+    padding: 10px 40px;
     box-shadow: var(--shadow);
     transform: rotate(-2deg) translateY(-10px);
     margin-bottom: 10px;
 }
 
 .title-box h1 {
-    font-size: 2.5rem; font-weight: bolder;
-    letter-spacing: 2px; text-transform: uppercase;
+    font-size: 2.5rem;
+    font-weight: bolder;
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
 
 /* Botones de Navegación */
@@ -94,18 +112,40 @@ body {
 .btn-tab:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--stroke); }
 
 /* Fila del Buscador */
-.search-row { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+.search-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px; 
+}
 
-.dropdown {
-    background-color: var(--yellow-accent); border: var(--border);
-    border-radius: 4px; padding: 15px 5px; font-weight: bold;
-    display: flex; align-items: center; gap: 5px; cursor: pointer;
-    min-width: 120px; justify-content: space-between;
+.select-wrapper{
+    background-color: var(--yellow-accent);
+    border: var(--border);
+    border-radius: 4px;
+    font-weight:bolder;
+    display: flex;
+    align-items: center;
+}
+
+select{
+    padding: 15px 5px;
+    font-weight: inherit;
+    appearance: none;
+    border: none;
+    cursor: pointer;
+    background-color: transparent;
 }
 
 .search-input {
-    border: var(--border); padding: 15px 15px; font-family: inherit; font-size: 1rem;
-    box-shadow: 6px 6px 0px var(--stroke); width: 250px; outline: none; text-transform: uppercase;
+    border: var(--border);
+    padding: 15px 15px;
+    font-family: inherit;
+    font-size: 1rem;
+    box-shadow: 6px 6px 0px var(--stroke);
+    width: 250px;
+    outline: none;
+    text-transform: uppercase;
 }
 .search-input::placeholder { color: #888; }
 
