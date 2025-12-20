@@ -159,6 +159,7 @@ body {
 select{
     padding: 15px 5px;
     font-weight: inherit;
+    font-size: medium;
     appearance: none;
     border: none;
     cursor: pointer;
@@ -295,3 +296,78 @@ select{
 .stat-name { width: 140px; font-weight: bold; }
 .stat-bar-outer { flex-grow: 1; height: 18px; border: var(--border); background: var(--white); }
 .stat-bar-inner { height: 100%; background: var(--cyan-accent); }
+
+/* Lista scrolleable de pokémon */
+.pokemonLista {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+    border: 4px solid black;
+    background-color: lightgray;
+    width: 100%;
+    height: 300px;
+    overflow-y: scroll;
+}
+
+.pokemonLista::-webkit-scrollbar {
+    width: 12px;
+}
+
+.pokemonLista::-webkit-scrollbar-track {
+    background: #f0f0f0;
+}
+
+.pokemonLista::-webkit-scrollbar-thumb {
+    background: var(--cyan-accent);
+    border: 2px solid black;
+}
+
+.pokemon-item-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    border: 2px solid black;
+    background: var(--white);
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 118px;
+    height:130px;
+    box-shadow: 4px 4px 0px var(--stroke);
+}
+
+.pokemon-item-card:hover {
+    background: var(--cyan-accent );
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px var(--stroke);
+}
+
+.pokemon-item-img {
+    width: 70px;
+    height: 70px;
+}
+
+.pokemon-item-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    width: 100%;
+}
+
+.pokemon-item-name {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.pokemon-item-hidden {
+    padding: 1px 6px;
+    font-weight: bold;
+    font-size: 0.75rem;
+    text-align: center;
+}

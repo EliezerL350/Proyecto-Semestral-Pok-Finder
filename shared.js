@@ -1,12 +1,9 @@
-// shared.js
 const PokeFinderApp = (() => {
 
-    // Tiempo de vida del caché (24 horas)
     const CACHE_TTL = 1000 * 60 * 60 * 24;
     const HISTORY_KEY = "poke-history";
     let activeEvolution = null;
 
-    // Elementos del HTML
     const htmlElements = {
         input: document.getElementById('pokemon-input'),
         container: document.getElementById('result-container'),
@@ -17,10 +14,8 @@ const PokeFinderApp = (() => {
         tabs: document.querySelectorAll(".btn-tab")
     };
 
-    // Funciones de apoyo
     const utils = {
 
-        // Obtener datos del caché
         getFromCache(key) {
             const item = JSON.parse(localStorage.getItem(key));
             if (!item) return null;
@@ -32,7 +27,6 @@ const PokeFinderApp = (() => {
             return item.data;
         },
 
-        // Guardar datos en caché
         saveToCache(key, data) {
             localStorage.setItem(key, JSON.stringify({
                 data,
@@ -40,12 +34,10 @@ const PokeFinderApp = (() => {
             }));
         },
 
-        // Obtener histórico
         getHistory() {
             return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
         },
 
-        // Guardar búsqueda en histórico
         saveHistory(pokemon) {
             let history = utils.getHistory()
                 .filter(p => p.id !== pokemon.id);
@@ -54,7 +46,6 @@ const PokeFinderApp = (() => {
             localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
         },
 
-        // Eliminar del histórico
         removeFromHistory(id) {
             const history = utils.getHistory()
                 .filter(p => p.id !== id);
@@ -62,7 +53,6 @@ const PokeFinderApp = (() => {
             localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
         },
 
-        // Limpiar histórico y caché
         clearHistoryAndCache() {
             localStorage.removeItem(HISTORY_KEY);
             Object.keys(localStorage).forEach(key => {
@@ -70,10 +60,130 @@ const PokeFinderApp = (() => {
                     localStorage.removeItem(key);
                 }
             });
-        }
+        },
+
+        async buscarPokemon() {
+            const valor = htmlElements.input.value.toLowerCase().trim();
+            const cacheKey = `pokemon-${valor}`;
+            let data = utils.getFromCache(cacheKey);
+            let source = "CACHÉ";
+
+            if (!data) {
+                const response = await fetch(
+                    `https://pokeapi.co/api/v2/pokemon/${valor}`
+                );
+                if (!response.ok) throw new Error();
+
+                data = await response.json();
+                utils.saveToCache(cacheKey, data);
+                source = "API";
+            }
+
+            activeEvolution = data.name;
+            renderPokemon(data, source);
+            utils.saveHistory(data);
+            await renderEvolution(data.id);
+        },
+
+        async buscarHabilidad()
+        {
+            const valor = htmlElements.input.value.toLowerCase().trim();
+
+            if (valor === "") {
+                alert("Por favor escribe un nombre o ID.");
+                return;
+            }
+
+            htmlElements.container.innerHTML = "⏳ Buscando...";
+
+            try 
+            {
+                const response = await fetch(`https://pokeapi.co/api/v2/ability/${valor}`);
+                if (!response.ok) throw new Error("No encontrado");
+                data = await response.json();
+            
+               renderHabilidad(data);
+
+            } catch (error) {
+                htmlElements.container.innerHTML = `<div class="pokemon-card">❌ Habilidad no encontrado</div>`;
+            }
+        },
     };
 
-    // Función principal de búsqueda
+    const renderHabilidad = (data) => {
+        let descripcion = data.flavor_text_entries.find(flavor_text => flavor_text.language.name =="es");
+
+        const pokemonList = data.pokemon.map(p => {
+            const pokemonId = p.pokemon.url.split('/')[6];
+            const isHidden = p.is_hidden ? "(oculta)" : "";
+            const hiddenStyle = p.is_hidden ? "color: var(--red-poke); font-style: italic;" : "background-color: transparent;";
+            
+            return `
+                <div class="pokemon-item-card" data-pokemon-name="${p.pokemon.name}">
+                    <img class="pokemon-item-img" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png" alt="${p.pokemon.name}">
+                    <div class="pokemon-item-info">
+                        <span class="pokemon-item-name">${p.pokemon.name.toUpperCase()}</span>
+                        <span class="pokemon-item-hidden" style="${hiddenStyle}">
+                            ${isHidden}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        htmlElements.container.innerHTML = `
+            <div class="pokemon-card">
+                <div style="
+                display: flex;
+                justify-content: space-between;
+                border-bottom: 4px solid black;
+                font-weight: bolder;
+                padding: 10px 0px;
+                margin-bottom: 25px;
+                font-size: 1.7rem;">
+                    ✨ ${data.name.toUpperCase()}
+                    <span style="
+                    border: 2px solid black;
+                    color: var(--color-primary);
+                    background-color: var(--yellow-accent);
+                    padding: 0px 10px;
+                    ">
+                    #${data.id}
+                    </span>
+                </div>
+
+                <div style="margin-bottom: 8px;
+                    display: flex;
+                    flex-direction: column;
+                    background-color: lightgrey;
+                    border: 4px solid black;
+                    padding: 20px;">
+                        <span style="
+                            font-weight: bold;
+                            padding-bottom: 10px;">EFECTO
+                        </span>
+                        <span>${descripcion.flavor_text}</span>
+                </div>
+
+                <span style="font-weight: bold; display: block; margin: 15px 0 10px 0;">
+                    POKÉMON CON ESTA HABILIDAD (${data.pokemon.length})
+                </span>
+
+                <div class="pokemonLista">
+                    ${pokemonList}
+                </div>
+            </div>
+        `
+
+        htmlElements.container.querySelectorAll('.pokemon-item-card').forEach(item => {
+            item.addEventListener('click', async () => {
+                const pokemonName = item.dataset.pokemonName;
+                htmlElements.input.value = pokemonName;
+                await utils.buscarPokemon();
+            });
+        });
+    }
+
     const buscar = async () => {
         const valor = htmlElements.input.value.toLowerCase().trim();
         const tipo = htmlElements.searchType?.value || "pokemon";
@@ -87,9 +197,9 @@ const PokeFinderApp = (() => {
 
         try {
             if (tipo === "pokemon") {
-                await buscarPokemon(valor);
+                await utils.buscarPokemon();
             } else {
-                await buscarHabilidad(valor);
+                await utils.buscarHabilidad();
             }
         } catch {
             htmlElements.container.innerHTML =
@@ -97,30 +207,6 @@ const PokeFinderApp = (() => {
         }
     };
 
-    // Buscar Pokémon
-    const buscarPokemon = async (valor) => {
-        const cacheKey = `pokemon-${valor}`;
-        let data = utils.getFromCache(cacheKey);
-        let source = "CACHÉ";
-
-        if (!data) {
-            const response = await fetch(
-                `https://pokeapi.co/api/v2/pokemon/${valor}`
-            );
-            if (!response.ok) throw new Error();
-
-            data = await response.json();
-            utils.saveToCache(cacheKey, data);
-            source = "API";
-        }
-
-        activeEvolution = data.name;
-        renderPokemon(data, source);
-        utils.saveHistory(data);
-        await renderEvolution(data.id);
-    };
-
-    // Mostrar Pokémon
     const renderPokemon = (data, source) => {
         htmlElements.container.innerHTML = `
             <div class="pokemon-card">
@@ -171,7 +257,6 @@ const PokeFinderApp = (() => {
         `;
     };
 
-    // Mostrar evolución
     const renderEvolution = async (pokemonId) => {
         const speciesRes = await fetch(
             `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`
@@ -189,16 +274,23 @@ const PokeFinderApp = (() => {
 
             let html = `
                 <div class="evo-card ${node.species.name === activeEvolution ? "active" : ""}"
-                     data-name="${node.species.name}">
+                    data-name="${node.species.name}">
                     <img src="${data.sprites.front_default}">
                     <div>${node.species.name.toUpperCase()}</div>
                 </div>
             `;
 
-            if (node.evolves_to.length) {
-                html += `<div style="font-size:2rem;">→</div>`;
-                html += await buildChain(node.evolves_to[0]);
+            if (node.evolves_to.length > 0) {
+                html += `<div style="display:flex;gap:20px;align-items:center;">`;
+
+                for(const evo of node.evolves_to) {
+                    html += `<div style="font-size:2rem;">→</div>`;
+                    html += await buildChain(evo);
+                }
+
+                html += `</div>`;
             }
+
             return html;
         };
 
@@ -216,29 +308,7 @@ const PokeFinderApp = (() => {
         `;
     };
 
-    // Buscar habilidad
-    const buscarHabilidad = async (valor) => {
-        const res = await fetch(
-            `https://pokeapi.co/api/v2/ability/${valor}`
-        );
-        if (!res.ok) throw new Error();
 
-        const data = await res.json();
-        const desc =
-            data.effect_entries.find(e => e.language.name === "es")
-                ?.short_effect || "Descripción no disponible";
-
-        htmlElements.container.innerHTML = `
-            <div class="pokemon-card">
-                <div style="font-weight:bold;font-size:1.2rem;">
-                    ⚡ ${data.name.toUpperCase()}
-                </div>
-                <p style="margin:15px 0;">${desc}</p>
-            </div>
-        `;
-    };
-
-    // Mostrar histórico
     const renderHistory = () => {
         if (!htmlElements.historyList) return;
 
@@ -276,13 +346,25 @@ const PokeFinderApp = (() => {
         });
     };
 
-    // Inicializar aplicación
     const init = () => {
 
-        htmlElements.searchBtn?.addEventListener("click", buscar);
+        htmlElements.searchBtn?.addEventListener("click", () =>{
+            if(document.querySelector('select').value == "Pokémon"){
+                utils.buscarPokemon(); 
+            }else if (document.querySelector('select').value == "Habilidad")
+            {
+                 utils.buscarHabilidad(); 
+            }
+        });
 
         htmlElements.input?.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") buscar();
+            if (e.key === 'Enter')
+                {
+                    if(document.querySelector('select').value == "Pokémon"){
+                        utils.buscarPokemon(); 
+                    }else if (document.querySelector('select').value == "Habilidad")
+                        utils.buscarHabilidad();
+                }
         });
 
         htmlElements.container?.addEventListener("click", (e) => {

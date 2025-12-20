@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pokémon VS</title>
+  <link rel="stylesheet" href="shared.css">
+  <script defer src="shared.js"></script>
+  <script defer src="vs.js"></script>
+</head>
+
+<body>
+  <header class="vs-header">
+    <h1>⚔️ POKÉMON VS ⚔️</h1>
+  </header>
+
+  <section class="vs-search">
+    <input type="text" id="p1" placeholder="Pokémon 1">
+    <input type="text" id="p2" placeholder="Pokémon 2">
+    <button id="btnBattle">¡BATALLAR!</button>
+  </section>
+
+  <section class="vs-cards">
+    <div id="card1" class="vs-card"></div>
+    <div class="vs-divider">VS</div>
+    <div id="card2" class="vs-card"></div>
+  </section>
+
+  <section id="vs-result" class="hidden">
+    <h2>🏆 RESULTADO DE LA BATALLA</h2>
+    <div id="winner"></div>
+
+    <h3>⚡ Ventajas de Tipo</h3>
+    <div id="typeEffect"></div>
+
+    <h3>📊 Comparación de Stats</h3>
+    <div id="statsCompare"></div>
+
+    <h3>🧮 Cálculo del Puntaje</h3>
+    <div id="scoreCalc"></div>
+  </section>
+</body>
+</html>
