@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Favoritos</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cutive+Mono&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="shared.css">
+</head>
+
+<body>
+
+<div class="scene">
+    <div class="pokeball"></div>
+
+    <div class="ui-layer">
+
+        <div class="title-box">
+            <h1>❤️ FAVORITOS</h1>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="btn-tab" data-page="index.html">🔍 BUSCAR</button>
+            <button class="btn-tab" data-page="historico.html">📜 HISTÓRICO</button>
+            <button class="btn-tab" data-page="vs.html">⚔ VS</button>
+            <button class="btn-tab active">❤️ FAVORITOS</button>
+        </div>
+
+        <div id="favorites-list"></div>
+
+        <button class="btn-search" id="clear-favorites">
+            🗑 LIMPIAR TODO
+        </button>
+
+    </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        renderFavorites();
+    });
+
+    function renderFavorites() {
+        const list = document.getElementById("favorites-list");
+        const favorites = JSON.parse(localStorage.getItem("poke-favorites")) || [];
+
+        if (!favorites.length) {
+            list.innerHTML = `<div class="pokemon-card">💔 No hay favoritos</div>`;
+            return;
+        }
+
+        list.innerHTML = favorites.map(p => `
+            <div class="pokemon-card" style="display:flex;align-items:center;gap:15px;">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id}.png" width="60">
+
+                <div style="flex-grow:1;cursor:pointer;"
+                     onclick="location.href='index.html?pokemon=${p.id}'">
+                    <strong>#${p.id} ${p.name.toUpperCase()}</strong>
+                    <div>
+                        ${p.types.map(t => `
+                            <span style="font-size:0.7rem;font-weight:bold;">${t.toUpperCase()}</span>
+                        `).join(" ")}
+                    </div>
+                </div>
+
+                <button onclick="removeFav(${p.id})">🗑</button>
+            </div>
+        `).join("");
+    }
+
+    function removeFav(id) {
+        let favs = JSON.parse(localStorage.getItem("poke-favorites")) || [];
+        favs = favs.filter(p => p.id !== id);
+        localStorage.setItem("poke-favorites", JSON.stringify(favs));
+        renderFavorites();
+    }
+
+    document.getElementById("clear-favorites").addEventListener("click", () => {
+        localStorage.removeItem("poke-favorites");
+        renderFavorites();
+    });
+</script>
+
+</body>
+</html>
