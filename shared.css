@@ -297,7 +297,25 @@ select{
 .stat-bar-outer { flex-grow: 1; height: 18px; border: var(--border); background: var(--white); }
 .stat-bar-inner { height: 100%; background: var(--cyan-accent); }
 
-/* Lista scrolleable de pokémon */
+#habilidad-title{
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 4px solid black;
+    font-weight: bolder;
+    padding: 10px 0px;
+    margin-bottom: 25px;
+    font-size: 1.7rem;
+}
+
+#habilidad-desc{
+    margin-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    background-color: lightgrey;
+    border: 4px solid black;
+    padding: 20px;
+}
+
 .pokemonLista {
     display: flex;
     justify-content: center;
@@ -328,14 +346,14 @@ select{
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
     padding: 10px;
     border: 2px solid black;
     background: var(--white);
     cursor: pointer;
     transition: all 0.2s;
     width: 118px;
-    height:130px;
+    min-height: 125px;
+    height:fit-content;
     box-shadow: 4px 4px 0px var(--stroke);
 }
 
@@ -354,7 +372,6 @@ select{
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1px;
     width: 100%;
 }
 

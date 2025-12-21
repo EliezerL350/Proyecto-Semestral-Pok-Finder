@@ -133,14 +133,7 @@ const PokeFinderApp = (() => {
 
         htmlElements.container.innerHTML = `
             <div class="pokemon-card">
-                <div style="
-                display: flex;
-                justify-content: space-between;
-                border-bottom: 4px solid black;
-                font-weight: bolder;
-                padding: 10px 0px;
-                margin-bottom: 25px;
-                font-size: 1.7rem;">
+                <div id="habilidad-title">
                     ✨ ${data.name.toUpperCase()}
                     <span style="
                     border: 2px solid black;
@@ -152,12 +145,7 @@ const PokeFinderApp = (() => {
                     </span>
                 </div>
 
-                <div style="margin-bottom: 8px;
-                    display: flex;
-                    flex-direction: column;
-                    background-color: lightgrey;
-                    border: 4px solid black;
-                    padding: 20px;">
+                <div id="habilidad-desc">
                         <span style="
                             font-weight: bold;
                             padding-bottom: 10px;">EFECTO
